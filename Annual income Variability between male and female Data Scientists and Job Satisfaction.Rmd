@@ -1,0 +1,58 @@
+---
+title: "Annual income Variability between male and female UK Data Scientists and Job Satisfaction"
+author: "Safa A Elrais"
+date: "10/05/2021"
+output: 
+  html_document: 
+    highlight: kate
+    theme: cosmo
+    css: mycss.css
+    df_print: tibble
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(dplyr)
+df <- read.csv("C:/Users/44751/OneDrive/Desktop/200266165/PSYC6422/2020.csv")
+df <- df %>% 
+  filter(Country == "United Kingdom")
+
+
+
+```
+## Introduction  :
+
+### *Background *
+Today, Data Science is one of the hottest Jobs in Technology with Data Scientists are among the highest paid with an average annual income of `r format (mean(df$ConvertedComp, na.rm = TRUE),digits = 5 )`£ in the UK. Sometimes the long working hours, the complexity of data problems, the high expectations from employees exert tremendous pressure on Data Scientists. The stressful nature of the job may affect the level of Job Satisfaction leading to many more Data Scientists leaving their jobs.    
+
+###  *Research Questions*
+
+By this Data Visualization, we intend to answer these questions :
+
+1. Is the high annual income justify the stressful nature of the job leading to more Job Satisfaction?
+2. Is the high annual income more accounted for males or females Job Satisfaction in Data Science?
+
+### *Data Origins*
+
+The data is sourced directly from [Stack Overflow Annual Developer Survey](https://insights.stackoverflow.com/survey/) for the year 2020. The Survey consists of 6 sections and 61 variables . Respondents were from all over the world 
+
+
+```{r}
+
+#load the data
+
+datafile= "C:/Users/44751/OneDrive/Desktop/200266165/PSYC6422/2020.csv"
+
+df0 <- read.csv(datafile)
+
+#Display the data
+
+head(df0)
+
+
+```
+
