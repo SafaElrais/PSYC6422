@@ -1,14 +1,15 @@
 ---
-title: "Annual income Variability between male and female UK Data Scientists and Job Satisfaction"
+title: Annual income Variability between male and female UK Data Scientists and Job
+  Satisfaction
 author: "Safa A Elrais"
 date: "10/05/2021"
-output: 
-  html_document: 
+output:
+  pdf_document: default
+  html_document:
     highlight: kate
     theme: cosmo
     css: mycss.css
     df_print: tibble
-    
 ---
 
 ```{r setup, include=FALSE}
@@ -33,8 +34,10 @@ Today, Data Science is one of the hottest Jobs in Technology with Data Scientist
 
 By this Data Visualization, we intend to answer these questions :
 
-1. Is the high annual income justify the stressful nature of the job leading to more Job Satisfaction?
-2. Is the high annual income more accounted for males or females Job Satisfaction in Data Science?
+
+1. How much satisfied are UK Data Scientists with their jobs ?
+2. Is the high annual income justify the stressful nature of the job leading to more Job Satisfaction?
+3. Is the high annual income more accounted for males or females Job Satisfaction in Data Science?
 
 ### *Data Origins*
 
@@ -53,6 +56,127 @@ df0 <- read.csv(datafile)
 
 head(df0)
 
+
+```
+The analysis focuses mainly on 4 variables , the following table provides each variable names and its explanation.
+
+```{r echo=FALSE}
+
+ table <- tibble::tribble(
+   ~Variable.name,                               ~Explanation,
+         "Gender", "Either Man , Woman , Non-Binary",             
+        "Country", "Country where respondent Currently lives",             
+  "ConvertedComp", "Income per year",             
+  "JobSat"       , "Level of satisfaction : either very satisfied,slightly satisfied , neither Satisfied nor dissatisfied , slightly disatisfied , very dissatisfied " ,   
+  )
+
+require(knitr)
+kable(table, digits = 2, row.names = FALSE, align = "l",
+              caption = NULL)
+
+
+```
+## Data cleaning and Preparation : 
+
+The current data set has several issues before its ready for visualization , the following steps are required :
+
+```{r echo=TRUE}
+
+# Load libraries 
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+# Filter Data set to include United Kingdom observations only 
+
+df0 <- df %>% 
+  filter(Country== "United Kingdom")
+
+# Select only the variables used in analysis
+
+df <- df %>% 
+  select ("Gender", "Country", "ConvertedComp", "JobSat")
+
+
+# Remove the missing values from data set 
+
+df <- na.omit(df)
+
+# Subset Data TO include only Man and Woman respondents 
+
+df <- subset(df, Gender == "Man" | Gender == "Woman")
+
+
+ 
+# Show first 5 rows of the processed data 
+ 
+head(df , 5)
+
+# Summarize the processed data 
+
+summary(df)
+
+
+```
+
+
+<font color = "Red"> *N.B : In my analysis I excluded 30 Observations from Gender Column to limit analysis only for respondents who identified themselves as Man or Woman .</font>
+
+
+##Data Visualization :
+
+##* Visualization 1 :  How much satisfied are UK Data Scientists with their jobs ? *
+
+This Visualization shows how much satisfied are UK data Scientists in their careers 
+
+```{r}
+
+# label parameters of the bar graph
+
+ylab <- "Percentage of Responses"
+title <- "Overall  Career Satisfaction among UK Data Scientists "
+
+
+#set the colors of the bar graph 
+
+
+pallette <- c("Very satisfied" ="red",
+              "Slightly satisfied"="blue",
+               "Neither satisfied nor dissatisfied"="green",
+               "Slightly dissatisfied"="yellow",
+               "Very dissatisfied"= "grey")
+
+
+# create the bar chart
+
+library(ggplot2)
+
+p <- ggplot(data=df, mapping = aes(x=JobSat, fill=("JobSat")))
+
+p+geom_bar(mapping = aes(y=..prop..,group="JobSat"))+
+  scale_x_discrete(limits=c("Very satisfied",
+                            "Slightly satisfied",
+                            "Neither satisfied nor dissatisfied",
+                            "Slightly dissatisfied","Very dissatisfied"))+
+  scale_y_continuous(labels = scales::percent) +labs(y=ylab,title = title)+
+  coord_flip()+theme(legend.position = "none",panel.background = element_blank(),plot.title=element_text(family="Times", face="italic", size=18 , color = "#170630"), axis.title.y = element_blank(),axis.title.x = element_text(family= "Times", size = 10))+scale_fill_brewer(palette = "Dark2")
+                          
+                                                                                                                                                                                                                                
+```
+
+The above graph shows that majority of UK Data Scientists are satisfied with their jobs with around 65% of responses were either slightly or very satisfied. In the next visualization we will explore if this high level of satisfaction is related to high annual income or not .
+
+
+##* Visualization 2 :Is the high annual income justify the stressful nature of the job leading to more Job Satisfaction? *
+
+
+```{r}
+library(ggplot2)
+
+p2 <- ggplot(data=df , mapping =aes(x=JobSat , y=ConvertedComp , fill = JobSat))
+
+p2+geom_violin() 
 
 ```
 

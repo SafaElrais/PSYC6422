@@ -1,0 +1,303 @@
+---
+title: "How much UK Data Scientists are Satisfied with thier careers "
+author: "Safa A Elrais"
+date: "10/05/2021"
+output: 
+  html_document: 
+    highlight: kate
+    theme: cosmo
+    css: mycss.css
+    df_print: tibble
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(dplyr)
+df <- read.csv("C:/Users/44751/OneDrive/Desktop/200266165/PSYC6422/2020.csv")
+df <- df %>% 
+  filter(Country == "United Kingdom")
+
+
+
+```
+## Introduction  :
+
+### *Background *
+Today, Data Science is one of the hottest Jobs in Technology with Data Scientists are among the highest paid with an average annual income of `r format (mean(df$ConvertedComp, na.rm = TRUE),digits = 5 )`£ in the UK. Sometimes the long working hours, the complexity of data problems, the high expectations from employees exert tremendous pressure on Data Scientists. The stressful nature of the job may affect the level of Job Satisfaction leading to many more Data Scientists leaving their jobs.    
+
+###  *Research Questions*
+
+By this Data Visualization, we aim to investigate :
+
+
+1. The overall level of satisfaction among UK Data Scientists .
+2. What are the factors that affect level of Satisfaction among them , particularly we aim to study the effect of Gender (Man Vs Woman), Age , Employment status , organization size , and weekly working hours . 
+
+### *Data Origins*
+
+The data is sourced directly from [Stack Overflow Annual Developer Survey](https://insights.stackoverflow.com/survey/) for the year 2020. The Survey consists of 6 sections and 61 variables . Respondents were from all over the world 
+
+
+```{r}
+
+#load the data
+
+datafile= "C:/Users/44751/OneDrive/Desktop/200266165/PSYC6422/2020.csv"
+
+df0 <- read.csv(datafile)
+
+#Display the data
+
+head(df0)
+
+
+```
+The analysis focuses mainly on 4 variables , the following table provides each variable names and its explanation.
+
+```{r echo=FALSE}
+
+ table <- tibble::tribble(
+   ~Variable.name,                               ~Explanation,
+         "Gender", "Either Man , Woman , Non-Binary",             
+        "Age", "Age of the respondent",             
+  "Employment", "Employment staus of the respondent at time of Submission ",             
+  "JobSat"       , "Level of satisfaction as 5 likert scale of satisfaction " , 
+  "OrgSize", "size of organization currently working in",
+  "WorkWeekHrs", "How many hours does the respondent work per week"
+  
+  )
+
+require(knitr)
+kable(table, digits = 2, row.names = FALSE, align = "l",
+              caption = NULL)
+
+
+```
+## Data cleaning and Preparation : 
+
+The current data set has several issues before its ready for visualization , the following steps are required :
+
+```{r echo=TRUE}
+
+# Load libraries 
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+# Filter Data set to include United Kingdom observations only 
+
+df0 <- df %>% 
+  filter(Country == "United Kingdom")
+
+# Select variables and create new variables for age groups , work hours groups
+
+df <- df %>% 
+  select ("Gender", "Country", "Age", "JobSat","Employment","OrgSize","WorkWeekHrs") %>% 
+  mutate(Agegroups=cut(Age,c(0,20,40,60,80)))
+
+# create a new variable for age groups
+
+
+
+# Remove the missing values from data set 
+
+df <- na.omit(df)
+
+# Subset Data TO include only Man and Woman respondents 
+
+df <- subset(df, Gender == "Man" | Gender == "Woman")
+ 
+# Show first 5 rows of the processed data 
+ 
+head(df , 5)
+
+# Summarize the processed data 
+
+summary(df)
+
+
+```
+
+
+<font color = "Red"> *N.B : In my analysis I excluded 30 Observations from Gender Column to limit analysis only for respondents who identified themselves as Man or Woman .</font>
+
+
+## Data Visualization :
+
+### *Visualization 1 : The Overall level Of Satisfaction Among Data Scientists* 
+
+```{r fig1 ,fig.align="left",fig.height=5,fig.width=6}
+
+# label parameters of the bar graph
+
+ylab <- "Percentage of Responses"
+title <- "Overall  Career Satisfaction among UK Data Scientists "
+
+
+# create the bar chart
+
+library(ggplot2)
+
+p <- ggplot(data=df, mapping = aes(x=JobSat, fill= "JobSat"))
+
+p+geom_bar(mapping = aes(y=..prop..,group="JobSat"), width = 0.75)+
+  scale_x_discrete(limits=c("Very satisfied",
+                            "Slightly satisfied",
+                            "Neither satisfied nor dissatisfied",
+                            "Slightly dissatisfied","Very dissatisfied"))+
+  scale_y_continuous(name= ylab , labels = scales::percent)+ggtitle(title)+
+  coord_flip()+theme(legend.position = "none",panel.background = element_blank(),plot.title=element_text(family="Times", face="italic", size=12 , color = "#170630",hjust=0.8), axis.title.y = element_blank(),axis.title.x = element_text(family= "Times", size = 10), text=element_text(size = 10, family="Times"),axis.text.x=element_text(colour="black", size = 10), axis.text.y=element_text(colour="black", size =10))+scale_fill_brewer(palette = "Accent")
+                          
+                                                                                                                                                                                                                                
+```
+The above graph shows that majority of UK Data Scientists are satisfied with their jobs with around 65% of responses were either slightly or very satisfied.
+
+### *Visualization 2 : The effect of Gender on level of Satisfaction *
+
+```{r fig2 ,fig.align='left',fig.height=6 , fig.width=7}
+
+# group data by Gender and JobSat
+
+df1 <- df %>% 
+  group_by(Gender,JobSat) %>% 
+  summarise(N=n()) %>% 
+  mutate(freq=N/sum(N),pct=round((freq*100),0))
+
+# label the parameters of the graph 
+xlab <- "Gender Of Particpants "
+ylab <- "Percentage"
+title <- " The effect of Gender on level of Satisfaction"
+
+
+#create the bar columns
+
+p2 <- ggplot(data=df1 , mapping = aes(x=Gender,y=pct,fill=JobSat))
+
+p2+geom_col(position = "dodge2")+facet_wrap(~Gender
+)+labs(x=xlab,
+                                      y=ylab,
+                                      title = title)+theme(legend.position ="bottom",         axis.line.x = element_line(size = 0.5, colour = "black"),
+        axis.line.y = element_line(size = 0.5, colour = "black"),
+        axis.line = element_line(size=1, colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        plot.title=element_text(size = 18, family="Times", face = "italic",color= "#170630",hjust=0.5),
+        text=element_text(size = 8, family="Times"),
+        axis.text.x=element_text(colour="black", size = 10),
+        axis.text.y=element_text(colour="black", size = 10))+scale_fill_brewer(palette = "Dark2")
+
+
+
+
+
+```
+
+
+
+### * Visualization 3 : The effect of Age on the level of Satisfaction *
+
+
+```{r} 
+#Group by Age groups and JobSat
+
+df2 <- df %>% 
+  group_by(Agegroups,JobSat) %>% 
+  summarise(N=n()) %>% 
+  mutate(freq=N/sum(N),pct=round((freq*100),0))
+
+#label the parameters of the graph 
+
+xlab <- "Age Groups Of Particpants "
+ylab <- "Percentage"
+title <- " The effect of Age on level of Satisfaction"
+
+
+#create the graph 
+
+
+p2 <- ggplot(data=df2 , mapping = aes(x=Agegroups,y=pct,fill=JobSat))
+
+p2+geom_col(position = "dodge2")+facet_wrap(~Agegroups)+labs(x=xlab,
+                                      y=ylab,
+                                      title = title)+theme(legend.position ="bottom",         axis.line.x = element_line(size = 0.5, colour = "black"),
+        axis.line.y = element_line(size = 0.5, colour = "black"),
+        axis.line = element_line(size=1, colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        plot.title=element_text(size = 18, family="Times", face = "italic",color= "#170630",hjust=0.5),
+        text=element_text(size = 8, family="Times"),
+        axis.text.x=element_text(colour="black", size = 10),
+        axis.text.y=element_text(colour="black", size = 10))+scale_fill_brewer(palette = "Dark2")
+
+```
+
+
+```{r}
+
+
+# remove outliers from data frame 
+
+Q1 <- quantile(df$WorkWeekHrs, .25)
+Q3 <- quantile(df$WorkWeekHrs, .75)
+IQR <- IQR(df$WorkWeekHrs)
+
+no_outliers<- subset(df, df$WorkWeekHrs> (Q1 - 1.5*IQR) & df$WorkWeekHrs< (Q3 + 1.5*IQR))
+
+
+p3 <- ggplot(data=no_outliers,mapping = aes(x=JobSat, y=WorkWeekHrs, fill=JobSat))
+
+p3+geom_boxplot()+geom_point()+scale_fill_brewer(palette = "Accent")
+
+
+
+
+
+
+
+```
+
+
+```{r}
+fdata <- subset(no_outliers,Gender=="Woman")
+mdata <- subset(no_outliers,Gender=="Man")
+title1 <- "Woman"
+title2 <- "Man"
+
+list <- c("fdata","mdata")
+titles <- c(title1 ,title2) 
+
+myplot <- function(data, title){
+  ggplot(data, aes(x = JobSat, y = WorkWeekHrs , fill=JobSat)) +
+    geom_boxplot(color="grey") +
+    labs(title = title)+scale_y_continuous (breaks=c(33,34,35,36,37,38,39,40,41,42))+scale_x_discrete(limits=c("Very satisfied","Slightly satisfied","Neither satisfied nor dissatisfied", "Slightly dissatisfied","Very dissatisfied"))+coord_flip()+scale_color_brewer(palette = "Dark2")+theme_classic()
+                                                                                          
+}
+
+for(i in seq_along(list)){ #here could also be seq_along(titles) as they a re of the same length
+  print(myplot(get(list[i]), titles[i]))
+}
+
+
+
+```
+
+
+
+```{r}
+p6 <- ggplot(data=subset(no_outliers,WorkWeekHrs < 40), mapping = aes(x=JobSat, fill=Gender))
+p6+geom_bar(position = "dodge2",mapping = aes(y=..prop.., group= "Gender"))
+
+
+
+
+
+```
